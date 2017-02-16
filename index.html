@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pernod Ricard Outlets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="description" content="Pernod Ricard Outlets">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <base href="/">
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+  </head>
+  <body>
+    <div id="mapid" style="width: 600px; height: 400px; position: relative;"></div>
+    <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+
+      <fieldset>
+        <h2>Json File</h2>
+         <input type='file' id='fileinput'>
+         <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+      </fieldset>
+    </form>
+  </body>
+  <script type="text/javascript">
+
+
+
+  var cities = new L.LayerGroup();
+
+	L.marker([39.61, -105.02]).bindPopup('This is Littleton, CO.').addTo(cities),
+	L.marker([39.74, -104.99]).bindPopup('This is Denver, CO.').addTo(cities),
+	L.marker([39.73, -104.8]).bindPopup('This is Aurora, CO.').addTo(cities),
+	L.marker([39.77, -105.23]).bindPopup('This is Golden, CO.').addTo(cities);
+
+
+	var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}';
+
+	var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr, accessToken: 'pk.eyJ1IjoidmljdG9yNTExNCIsImEiOiJjaXo1cmQ3dGIwMnU4MzNtbnF0eGkzMHowIn0.wXKUw1ygEt2yrCVBTI1wcg'}),
+		streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr, accessToken: 'pk.eyJ1IjoidmljdG9yNTExNCIsImEiOiJjaXo1cmQ3dGIwMnU4MzNtbnF0eGkzMHowIn0.wXKUw1ygEt2yrCVBTI1wcg'});
+
+	var map = L.map('mapid', {
+		center: [ -8.893, 13.195],
+		zoom: 10,
+		layers: [grayscale, cities]
+	});
+
+	var baseLayers = {
+		"Grayscale": grayscale,
+		"Streets": streets
+	};
+
+	var overlays = {
+		"Cities": cities
+	};
+
+  var geojsonMarkerOptions = {
+      radius: 8,
+      fillColor: "#ff7800",
+      color: "#000",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+  };
+
+
+  function loadFile() {
+    var input, file, fr;
+
+    if (typeof window.FileReader !== 'function') {
+      alert("The file API isn't supported on this browser yet.");
+      return;
+    }
+
+    input = document.getElementById('fileinput');
+    if (!input) {
+      alert("Um, couldn't find the fileinput element.");
+    }
+    else if (!input.files) {
+      alert("This browser doesn't seem to support the `files` property of file inputs.");
+    }
+    else if (!input.files[0]) {
+      alert("Please select a file before clicking 'Load'");
+    }
+    else {
+      file = input.files[0];
+      fr = new FileReader();
+      fr.onload = receivedText;
+      fr.readAsText(file);
+    }
+
+    function receivedText(e) {
+      lines = e.target.result;
+      var newArr = JSON.parse(lines);
+      //newArr.splice(300)
+      console.log(newArr);
+      var myLayer = L.geoJSON().addTo(map);
+      myLayer.addData(newArr);
+    }
+  }
+
+  </script>
+</html>
